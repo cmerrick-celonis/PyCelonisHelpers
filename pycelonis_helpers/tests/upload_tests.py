@@ -62,4 +62,44 @@ class TestGetColumnConfig(TestCase):
         """
         column_configs = upload.get_column_config(df=self.df)
         self.assertListEqual(self.expected_configs_pk_not_specified, column_configs)
+
+class TestCatchArrowInvalidErrors(TestCase):
+    def setUp(self) -> None:
+        return super().setUp()
     
+    def test_extract_arrow_invalid_error_values(self):
+        msg = "Could not convert '4' with type str: tried to convert to int64 Conversion failed for column Urgency with type object"
+        expected_dict = {
+            'column':'Urgency',
+            'column_type':'object',
+            'error_value':'4',
+            'type_from':'str',
+            'type_to':'int64',
+        }
+        returned_dict = upload.extract_arrow_invalid_error_values(msg)
+        self.assertDictEqual(expected_dict, returned_dict)
+
+    def test_catch_arrow_errors_df_has_errors(self):
+        """
+        When the df has errors we expect the function to return a dataframe 
+        detailing these errors
+        """
+        test_df = upload.DataFrame(data={
+            'col_1':[5,4,3,'1'],
+            'col_2':[5,4,3,'5 - very low' ],
+            'col_3':[1,2,3,4,],
+            'col_4':['a','b','c','d'],
+            }
+        )
+        expected_df = upload.DataFrame(data={
+            'column':['col_1', 'col_2'], 
+            'column_type':['object', 'object'], 
+            'error_value':['1', '5 - very low'], 
+            'type_from':['str', 'str'], 
+            'type_to':['int64', 'int64']
+        })
+        returned_df = upload.catch_arrow_invalid_errors(test_df)
+        self.assertDictEqual(expected_df.to_dict(), returned_df.to_dict())
+
+
+        
