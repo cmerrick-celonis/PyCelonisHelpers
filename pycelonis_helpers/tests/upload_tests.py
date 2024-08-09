@@ -101,5 +101,16 @@ class TestCatchArrowInvalidErrors(TestCase):
         returned_df = upload.catch_arrow_invalid_errors(test_df)
         self.assertDictEqual(expected_df.to_dict(), returned_df.to_dict())
 
+    def test_catch_arrow_errors_df_no_errors(self):
+        """
+        When the df has no errors we expect the function to return None
+        """
+        test_df = upload.DataFrame(data={
+            'col_3':[1,2,3,4,],
+            'col_4':['a','b','c','d'],
+            }
+        )
+        returned_value = upload.catch_arrow_invalid_errors(test_df)
+        self.assertIsNone(returned_value)
 
         
